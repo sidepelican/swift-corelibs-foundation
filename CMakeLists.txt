@@ -56,12 +56,6 @@ set(CF_DEPLOYMENT_SWIFT YES CACHE BOOL "Build for Swift" FORCE)
 set(SAVED_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 set(BUILD_SHARED_LIBS NO)
 
-# BlocksRuntime is already in libdispatch so is only needed if libdispatch is
-# NOT being used
-if(NOT HAS_LIBDISPATCH_API)
-  add_subdirectory(Sources/BlocksRuntime)
-endif()
-
 add_subdirectory(CoreFoundation EXCLUDE_FROM_ALL)
 set(BUILD_SHARED_LIBS ${SAVED_BUILD_SHARED_LIBS})
 
