@@ -55,6 +55,7 @@ set(CF_DEPLOYMENT_SWIFT YES CACHE BOOL "Build for Swift" FORCE)
 
 set(SAVED_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 set(BUILD_SHARED_LIBS NO)
+
 add_subdirectory(CoreFoundation EXCLUDE_FROM_ALL)
 set(BUILD_SHARED_LIBS ${SAVED_BUILD_SHARED_LIBS})
 
@@ -73,6 +74,7 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/uuid-headers/uuid/uuid.h
 add_custom_target(uuid-headers
   DEPENDS ${CMAKE_BINARY_DIR}/uuid-headers/uuid/uuid.h)
 add_dependencies(CoreFoundation uuid-headers)
+
 target_include_directories(CoreFoundation PRIVATE
   ${CMAKE_BINARY_DIR}/uuid-headers
   ${CMAKE_CURRENT_BINARY_DIR}/CoreFoundation.framework/Headers)
@@ -114,10 +116,21 @@ install(DIRECTORY
         DESTINATION
           ${swift_lib_dir}/CoreFoundation
         FILES_MATCHING PATTERN "*.h")
-install(FILES
-          CoreFoundation/Base.subproj/$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:static/>module.map
-        DESTINATION
-          ${swift_lib_dir}/CoreFoundation)
+
+# TODO(katei): Remove wasm32-unknown-wasi specific modulemap which is required to link icui18n
+# This workaround can be removed after https://github.com/apple/swift/pull/35936
+if(CMAKE_SYSTEM_NAME STREQUAL WASI)
+  install(FILES
+            CoreFoundation/Base.subproj/$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:static/>wasm32-unknown-wasi.modulemap
+          DESTINATION
+            ${swift_lib_dir}/CoreFoundation
+          RENAME module.map)
+else()
+  install(FILES
+            CoreFoundation/Base.subproj/$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:static/>module.map
+          DESTINATION
+            ${swift_lib_dir}/CoreFoundation)
+endif()
 install(DIRECTORY
           ${CMAKE_CURRENT_BINARY_DIR}/CFURLSessionInterface.framework/Headers/
         DESTINATION
