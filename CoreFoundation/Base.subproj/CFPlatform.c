@@ -247,8 +247,6 @@ const char *_CFProcessPath(void) {
 }
 #endif // TARGET_OS_WASI
 
-#endif // TARGET_OS_WASI
-
 #if TARGET_OS_MAC || TARGET_OS_WIN32 || TARGET_OS_BSD
 CF_CROSS_PLATFORM_EXPORT Boolean _CFIsMainThread(void) {
     return pthread_main_np() == 1;
@@ -585,7 +583,6 @@ CF_EXPORT CFURLRef CFCopyHomeDirectoryURLForUser(CFStringRef uName) {
 #error Dont know how to compute users home directories on this platform
 #endif
 }
-#endif
 
 
 #undef CFMaxHostNameLength
