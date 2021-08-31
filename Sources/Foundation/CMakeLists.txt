@@ -6,12 +6,7 @@ list(APPEND FOUNDATION_WASI_UNAVAILABLE_SOURCES
   Host.swift
   Notification.swift
   NotificationQueue.swift
-  NSKeyedArchiver.swift
-  NSKeyedArchiverHelpers.swift
-  NSKeyedCoderOldStyleArray.swift
-  NSKeyedUnarchiver.swift
   NSNotification.swift
-  NSSpecialValue.swift
   Port.swift
   PortMessage.swift
   Process.swift
@@ -102,6 +97,10 @@ add_library(Foundation
   NSGeometry.swift
   NSIndexPath.swift
   NSIndexSet.swift
+  NSKeyedArchiver.swift
+  NSKeyedArchiverHelpers.swift
+  NSKeyedCoderOldStyleArray.swift
+  NSKeyedUnarchiver.swift
   NSLocale.swift
   NSLock.swift
   NSLog.swift
@@ -119,6 +118,7 @@ add_library(Foundation
   NSRegularExpression.swift
   NSSet.swift
   NSSortDescriptor.swift
+  NSSpecialValue.swift
   NSString.swift
   NSStringAPI.swift
   NSSwiftRuntime.swift

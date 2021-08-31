@@ -57,7 +57,6 @@ open class NSArray : NSObject, NSCopying, NSMutableCopying, NSSecureCoding, NSCo
         self.init(array: elements)
     }
     
-#if !os(WASI)
     public required convenience init?(coder aDecoder: NSCoder) {
         guard aDecoder.allowsKeyedCoding else {
             preconditionFailure("Unkeyed coding is unsupported.")
@@ -75,7 +74,6 @@ open class NSArray : NSObject, NSCopying, NSMutableCopying, NSSecureCoding, NSCo
             self.init(array: objects)
         }
     }
-#endif
 
     public convenience init(object anObject: Any) {
         self.init(array: [anObject])
@@ -108,7 +106,6 @@ open class NSArray : NSObject, NSCopying, NSMutableCopying, NSSecureCoding, NSCo
         buffer.deallocate()
     }
 
-#if !os(WASI)
     open func encode(with aCoder: NSCoder) {
         guard aCoder.allowsKeyedCoding else {
             preconditionFailure("Unkeyed coding is unsupported.")
@@ -127,7 +124,6 @@ open class NSArray : NSObject, NSCopying, NSMutableCopying, NSSecureCoding, NSCo
     public static var supportsSecureCoding: Bool {
         return true
     }
-#endif
     
     open override func copy() -> Any {
         return copy(with: nil)

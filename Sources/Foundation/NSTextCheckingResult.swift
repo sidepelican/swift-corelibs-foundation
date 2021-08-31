@@ -40,7 +40,6 @@ open class NSTextCheckingResult: NSObject, NSCopying, NSSecureCoding {
         }
     }
 
-#if !os(WASI)
     public required init?(coder aDecoder: NSCoder) {
         if type(of: self) == NSTextCheckingResult.self {
             NSRequiresConcreteImplementation()
@@ -54,7 +53,6 @@ open class NSTextCheckingResult: NSObject, NSCopying, NSSecureCoding {
     open class var supportsSecureCoding: Bool {
         NSRequiresConcreteImplementation()
     }
-#endif
     
     open override func copy() -> Any {
         return copy(with: nil)
@@ -117,8 +115,7 @@ internal class NSRegularExpressionCheckingResult: NSTextCheckingResult {
         _rangeArray = nil
         super.init()
     }
-    
-#if !os(WASI)
+
     public convenience required init?(coder aDecoder: NSCoder) {
         guard aDecoder.allowsKeyedCoding else {
             fatalError("Decoding this class requires keyed coding")
@@ -144,7 +141,6 @@ internal class NSRegularExpressionCheckingResult: NSTextCheckingResult {
     }
     
     override class var supportsSecureCoding: Bool { return true }
-#endif
     
     override var resultType: NSTextCheckingResult.CheckingType { return .regularExpression }
     

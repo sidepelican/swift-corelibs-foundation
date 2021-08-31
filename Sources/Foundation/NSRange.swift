@@ -348,7 +348,6 @@ extension NSRange {
     }
 }
 
-#if !os(WASI)
 extension NSRange: NSSpecialValueCoding {
     init(bytes: UnsafeRawPointer) {
         self.location = bytes.load(as: Int.self)
@@ -413,5 +412,4 @@ extension NSValue {
         return specialValue._value as! NSRange
     }
 }
-#endif
 #endif

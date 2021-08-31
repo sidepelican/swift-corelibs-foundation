@@ -90,7 +90,6 @@ open class NSSet : NSObject, NSCopying, NSMutableCopying, NSSecureCoding, NSCodi
         self.init(array: elements)
     }
 
-#if !os(WASI)
     internal class func _objects(from aDecoder: NSCoder, allowDecodingNonindexedArrayKey: Bool = true) -> [NSObject] {
         guard aDecoder.allowsKeyedCoding else {
             preconditionFailure("Unkeyed coding is unsupported.")
@@ -119,7 +118,6 @@ open class NSSet : NSObject, NSCopying, NSMutableCopying, NSSecureCoding, NSCodi
         // The encoding of a NSSet is identical to the encoding of an NSArray of its contents
         self.allObjects._nsObject.encode(with: aCoder)
     }
-#endif
     
     open override func copy() -> Any {
         return copy(with: nil)

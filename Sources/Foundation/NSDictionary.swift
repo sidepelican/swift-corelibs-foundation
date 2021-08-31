@@ -125,7 +125,6 @@ open class NSDictionary : NSObject, NSCopying, NSMutableCopying, NSSecureCoding,
         self.init(objects: values, forKeys: keys)
     }
 
-#if !os(WASI)
     public required convenience init?(coder aDecoder: NSCoder) {
         guard aDecoder.allowsKeyedCoding else {
             preconditionFailure("Unkeyed coding is unsupported.")
@@ -175,7 +174,6 @@ open class NSDictionary : NSObject, NSCopying, NSMutableCopying, NSSecureCoding,
     public static var supportsSecureCoding: Bool {
         return true
     }
-#endif
     
     open override func copy() -> Any {
         return copy(with: nil)
