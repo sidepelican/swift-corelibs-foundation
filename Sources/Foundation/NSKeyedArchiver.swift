@@ -238,7 +238,11 @@ open class NSKeyedArchiver : NSCoder {
     }
     
     private func _writeBinaryData(_ plist : NSDictionary) -> Bool {
+#if os(WASI)
+        return false
+#else
         return __CFBinaryPlistWriteToStream(plist, self._stream) > 0
+#endif
     }
     
     /// Returns the encoded data for the archiver.
