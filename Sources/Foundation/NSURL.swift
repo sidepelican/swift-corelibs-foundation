@@ -26,7 +26,6 @@ internal let kCFURLPlatformPathStyle = kCFURLWindowsPathStyle
 internal let kCFURLPlatformPathStyle = kCFURLPOSIXPathStyle
 #endif
 
-#if !os(WASI)
 private func _standardizedPath(_ path: String) -> String {
     if !path.isAbsolutePath {
         return path._nsObject.standardizingPath
@@ -37,7 +36,6 @@ private func _standardizedPath(_ path: String) -> String {
     return path
 #endif
 }
-#endif
 
 internal func _pathComponents(_ path: String?) -> [String]? {
     guard let p = path else {
@@ -193,8 +191,7 @@ open class NSURL : NSObject, NSSecureCoding, NSCopying {
         aCoder.encode(self.baseURL?._nsObject, forKey:"NS.base")
         aCoder.encode(self.relativeString._bridgeToObjectiveC(), forKey:"NS.relative")
     }
-    
-#if !os(WASI)
+
     public init(fileURLWithPath path: String, isDirectory isDir: Bool, relativeTo baseURL: URL?) {
         super.init()
         
@@ -214,6 +211,7 @@ open class NSURL : NSObject, NSSecureCoding, NSCopying {
         if validPathSeps.contains(where: { thePath.hasSuffix(String($0)) }) {
             isDir = true
         } else {
+#if !os(WASI)
             let absolutePath: String
             if let absPath = baseURL?.appendingPathComponent(path).path {
                 absolutePath = absPath
@@ -222,6 +220,7 @@ open class NSURL : NSObject, NSSecureCoding, NSCopying {
             }
             
             let _ = FileManager.default.fileExists(atPath: absolutePath, isDirectory: &isDir)
+#endif
         }
 
         self.init(fileURLWithPath: thePath, isDirectory: isDir.boolValue, relativeTo: baseURL)
@@ -238,9 +237,11 @@ open class NSURL : NSObject, NSSecureCoding, NSCopying {
         if validPathSeps.contains(where: { thePath.hasSuffix(String($0)) }) {
             isDir = true
         } else {
+#if !os(WASI)
             if !FileManager.default.fileExists(atPath: path, isDirectory: &isDir) {
                 isDir = false
             }
+#endif
         }
         super.init()
         _CFURLInitWithFileSystemPathRelativeToBase(_cfObject, thePath._cfObject, kCFURLPlatformPathStyle, isDir.boolValue, nil)
@@ -251,7 +252,6 @@ open class NSURL : NSObject, NSSecureCoding, NSCopying {
         let pathString = String(cString: path)
         self.init(fileURLWithPath: pathString, isDirectory: isDir, relativeTo: baseURL)
     }
-#endif
 
     public convenience init?(string URLString: String) {
         self.init(string: URLString, relativeTo:nil)
@@ -893,8 +893,7 @@ extension NSURL {
     open var deletingPathExtension: URL? {
         return CFURLCreateCopyDeletingPathExtension(kCFAllocatorSystemDefault, _cfObject)?._swiftObject
     }
-    
-#if !os(WASI)
+
     /* The following methods work only on `file:` scheme URLs; for non-`file:` scheme URLs, these methods return the URL unchanged.
     */
     open var standardizingPath: URL? {
@@ -902,7 +901,7 @@ extension NSURL {
         // In remaining cases it works just like URLByResolvingSymlinksInPath.
         return _resolveSymlinksInPath(excludeSystemDirs: true, preserveDirectoryFlag: true)
     }
-    
+
     open var resolvingSymlinksInPath: URL? {
         return _resolveSymlinksInPath(excludeSystemDirs: true)
     }
@@ -920,8 +919,12 @@ extension NSURL {
         if selfPath.isAbsolutePath {
             absolutePath = selfPath
         } else {
+#if os(WASI)
+            return nil
+#else
             let workingDir = FileManager.default.currentDirectoryPath
             absolutePath = workingDir._bridgeToObjectiveC().appendingPathComponent(selfPath)
+#endif
         }
 
         
@@ -942,15 +945,20 @@ extension NSURL {
 
             default:
                 resolvedPath = resolvedPath._bridgeToObjectiveC().appendingPathComponent(component)
+#if !os(WASI)
                 if let destination = FileManager.default._tryToResolveTrailingSymlinkInPath(resolvedPath) {
                     resolvedPath = destination
                 }
+#endif
             }
         }
 
         // It might be a responsibility of NSURL(fileURLWithPath:). Check it.
         var isExistingDirectory: ObjCBool = false
+
+#if !os(WASI)
         let _ = FileManager.default.fileExists(atPath: resolvedPath, isDirectory: &isExistingDirectory)
+#endif
 
         if excludeSystemDirs {
             resolvedPath = resolvedPath._tryToRemovePathPrefix("/private") ?? resolvedPath
@@ -966,7 +974,6 @@ extension NSURL {
             return URL(fileURLWithPath: resolvedPath)
         }
     }
-#endif
 
     fileprivate func _pathByRemovingDots(_ comps: [String]) -> String {
         var components = comps

@@ -48,7 +48,6 @@ private func UTF8STRING(_ bytes: UnsafePointer<UInt8>?) -> String? {
     return nil
 }
 
-#if !os(WASI)
 internal func _NSXMLParserCurrentParser() -> _CFXMLInterface? {
     if let parser = XMLParser.currentParser() {
         return parser.interface
@@ -56,7 +55,6 @@ internal func _NSXMLParserCurrentParser() -> _CFXMLInterface? {
         return nil
     }
 }
-#endif
 
 internal func _NSXMLParserExternalEntityWithURL(_ interface: _CFXMLInterface, urlStr: UnsafePointer<Int8>, identifier: UnsafePointer<Int8>, context: _CFXMLInterfaceParserContext, originalLoaderFunction: _CFXMLInterfaceExternalEntityLoader) -> _CFXMLInterfaceParserInput? {
     let parser = interface.parser
@@ -65,13 +63,11 @@ internal func _NSXMLParserExternalEntityWithURL(_ interface: _CFXMLInterface, ur
     if let allowedEntityURLs = parser.allowedExternalEntityURLs {
         if let url = URL(string: String(describing: urlStr)) {
             a = url
-            #if !os(WASI)
             if let scheme = url.scheme {
                 if scheme == "file" {
                     a = URL(fileURLWithPath: url.path)
                 }
             }
-            #endif
         }
         if let url = a {
             let allowed = allowedEntityURLs.contains(url)
@@ -470,23 +466,33 @@ open class XMLParser : NSObject {
     
     open var allowedExternalEntityURLs: Set<URL>?
     
-#if !os(WASI)
+#if os(WASI)
+    private static var _currentParser: XMLParser?
+#endif
+
     internal static func currentParser() -> XMLParser? {
+#if os(WASI)
+        return _currentParser
+#else
         if let current = Thread.current.threadDictionary["__CurrentNSXMLParser"] {
             return current as? XMLParser
         } else {
             return nil
         }
+#endif
     }
     
     internal static func setCurrentParser(_ parser: XMLParser?) {
+#if os(WASI)
+        _currentParser = parser
+#else
         if let p = parser {
             Thread.current.threadDictionary["__CurrentNSXMLParser"] = p
         } else {
             Thread.current.threadDictionary.removeObject(forKey: "__CurrentNSXMLParser")
         }
-    }
 #endif
+    }
     
     internal func _handleParseResult(_ parseResult: Int32) -> Bool {
         if parseResult == 0 {
@@ -563,9 +569,6 @@ open class XMLParser : NSObject {
     internal func parseFrom(_ stream : InputStream) -> Bool {
         var result = true
 
-        guard let buffer = malloc(_chunkSize)?.bindMemory(to: UInt8.self, capacity: _chunkSize) else { return false }
-        defer { free(buffer) }
-
         stream.open()
         defer { stream.close() }
         parseLoop: while result {
@@ -588,27 +591,23 @@ open class XMLParser : NSObject {
 
         return result
     }
-#endif
-
+#else
     internal func parse(from data: Data) -> Bool {
-        var data = data
         var result = true
-        let buffer = malloc(_chunkSize)!.bindMemory(to: UInt8.self, capacity: _chunkSize)
-        defer { free(buffer) }
-        var range = NSRange(location: 0, length: min(_chunkSize, data.count))
+        var chunkStart = 0
+        var chunkEnd = min(_chunkSize, data.count)
         while result {
-            let chunk = data.withUnsafeMutableBytes { (rawBuffer: UnsafeMutableRawBufferPointer) -> Data in
-                let ptr = rawBuffer.baseAddress!.advanced(by: range.location)
-                return Data(bytesNoCopy: ptr, count: range.length, deallocator: .none)
-            }
-            result = parseData(chunk)
-            if range.location + range.length >= data.count {
+            if chunkStart >= data.count || chunkEnd >= data.count {
                 break
             }
-            range = NSRange(location: range.location + range.length, length: min(_chunkSize, data.count - (range.location + range.length)))
+            let chunk = data[chunkStart..<chunkEnd]
+            result = parseData(chunk)
+            chunkStart = chunkEnd
+            chunkEnd = min(chunkEnd + _chunkSize, data.count)
         }
         return result
     }
+#endif
 
     // called to start the event-driven parse. Returns YES in the event of a successful parse, and NO in case of error.
     open func parse() -> Bool {
@@ -1031,10 +1030,8 @@ extension NSObject {
 func setupXMLParsing() {
     _CFSetupXMLInterface()
     _CFSetupXMLBridgeIfNeededUsingBlock {
-#if !os(WASI)
         __CFSwiftXMLParserBridge.CFBridge = CF.originalBridge
         __CFSwiftXMLParserBridge.currentParser = _NSXMLParserCurrentParser
-#endif
         __CFSwiftXMLParserBridge._xmlExternalEntityWithURL = _NSXMLParserExternalEntityWithURL
         __CFSwiftXMLParserBridge.getContext = _NSXMLParserGetContext
         __CFSwiftXMLParserBridge.internalSubset = _NSXMLParserInternalSubset
