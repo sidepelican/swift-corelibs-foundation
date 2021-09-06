@@ -569,6 +569,9 @@ open class XMLParser : NSObject {
     internal func parseFrom(_ stream : InputStream) -> Bool {
         var result = true
 
+        guard let buffer = malloc(_chunkSize)?.bindMemory(to: UInt8.self, capacity: _chunkSize) else { return false }
+        defer { free(buffer) }
+
         stream.open()
         defer { stream.close() }
         parseLoop: while result {
