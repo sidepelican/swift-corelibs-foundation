@@ -554,6 +554,9 @@ open class NSURL : NSObject, NSSecureCoding, NSCopying {
     // TODO: should be `checkResourceIsReachableAndReturnError` with autoreleased error parameter.
     // Currently Autoreleased pointers is not supported on Linux.
     open func checkResourceIsReachable() throws -> Bool {
+#if os(WASI)
+        return false
+#else
         guard isFileURL,
             let path = path else {
                 throw NSError(domain: NSCocoaErrorDomain,
@@ -569,6 +572,7 @@ open class NSURL : NSObject, NSSecureCoding, NSCopying {
         }
         
         return true
+#endif
     }
 #endif
 
@@ -862,7 +866,7 @@ extension NSURL {
         var result : URL? = appendingPathComponent(pathComponent, isDirectory: false)
 
         // File URLs can't be handled on WASI without file system access
-        #if !os(WASI)
+#if !os(WASI)
         // Since we are appending to a URL, path seperators should
         // always be '/', even if we're on Windows
         if !pathComponent.hasSuffix("/") && isFileURL {
@@ -874,7 +878,7 @@ extension NSURL {
             }
     
         }
-        #endif
+#endif
         return result
     }
     
