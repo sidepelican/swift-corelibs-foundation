@@ -141,7 +141,6 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL WASI)
     PlugIn.subproj/CFBundle_Tables.c
     PlugIn.subproj/CFPlugIn.c
     # Preferences
-    Preferences.subproj/CFApplicationPreferences.c
     Preferences.subproj/CFXMLPreferencesDomain.c
     # RunLoop
     RunLoop.subproj/CFRunLoop.c
@@ -197,8 +196,6 @@ add_framework(CoreFoundation
                 PlugIn.subproj/CFBundle_BinaryTypes.h
                 PlugIn.subproj/CFBundle_Internal.h
                 PlugIn.subproj/CFPlugIn_Factory.h
-                # Preferences
-                Preferences.subproj/CFPreferences.c
                 # RunLoop
                 RunLoop.subproj/CFMachPort_Internal.h
                 RunLoop.subproj/CFMachPort_Lifetime.h
@@ -356,6 +353,9 @@ add_framework(CoreFoundation
                 Parsing.subproj/CFBinaryPList.c
                 Parsing.subproj/CFOldStylePList.c
                 Parsing.subproj/CFPropertyList.c
+                # Preferences
+                Preferences.subproj/CFPreferences.c
+                Preferences.subproj/CFApplicationPreferences.c
                 # RunLoop
                 # TODO(compnerd) make this empty on non-Mach targets
                 # RunLoop.subproj/CFMachPort.c
