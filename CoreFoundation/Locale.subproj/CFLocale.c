@@ -19,15 +19,15 @@
 #include <CoreFoundation/CFNumber.h>
 #include "CFInternal.h"
 #include "CFRuntime_Internal.h"
-#if !TARGET_OS_WASI
 #include <CoreFoundation/CFPreferences.h>
+#if !TARGET_OS_WASI
 #include "CFBundle_Internal.h"
 #else
 #include "CFBase.h"
 #endif
 #include "CFLocaleInternal.h"
 #include <stdatomic.h>
-#if TARGET_OS_MAC || TARGET_OS_WIN32 || TARGET_OS_LINUX || TARGET_OS_BSD
+#if TARGET_OS_MAC || TARGET_OS_WIN32 || TARGET_OS_LINUX || TARGET_OS_BSD || TARGET_OS_WASI
 #include <unicode/uloc.h>           // ICU locales
 #include <unicode/ulocdata.h>       // ICU locale data
 #include <unicode/ucal.h>
@@ -581,12 +581,14 @@ static CFStringRef _CFLocaleCreateLocaleIdentifierForAvailableLocalizations(CFAr
 
         // Combine `availableLocalizations` with `preferredLanguages` to get `preferredLocalizations`, whose #0 object indicates the localization that the app is current launched in.
         CFArrayRef preferredLocalizations = NULL; {
+#if !TARGET_OS_WASI
             // Since `availableLocalizations` can contains legacy lproj names such as `English`, `French`, etc. we need to canonicalize these into language identifiers such as `en`, `fr`, etc. Otherwise the logic that later compares these to language identifiers will fail. (<rdar://problem/37141123>)
             CFArrayRef canonicalizedAvailableLocalizations = _CFLocaleCopyPreferredLanguagesFromPrefs(availableLocalizations);
             if (canonicalizedAvailableLocalizations) {
                 preferredLocalizations = CFBundleCopyLocalizationsForPreferences(canonicalizedAvailableLocalizations, canonicalizedPreferredLanguages);
                 CFRelease(canonicalizedAvailableLocalizations);
             }
+#endif
         }
         
         if (preferredLocalizations && CFArrayGetCount(preferredLocalizations) > 0) {

@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#if TARGET_OS_MAC || TARGET_OS_LINUX || TARGET_OS_BSD
+#if TARGET_OS_MAC || TARGET_OS_LINUX || TARGET_OS_BSD || TARGET_OS_WASI
 #if TARGET_OS_OSX
 #include <CoreFoundation/CFNumberFormatter.h>
 #endif
@@ -31,7 +31,7 @@
 #include <sys/types.h>
 #if __has_include(<sys/syslog.h>)
 #include <sys/syslog.h>
-#else
+#elif !TARGET_OS_WASI
 #include <syslog.h>
 #endif
 #include <CoreFoundation/CFURLPriv.h>
