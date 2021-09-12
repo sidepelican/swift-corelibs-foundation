@@ -413,6 +413,9 @@ open class XMLParser : NSObject {
 #if !os(WASI)
     // initializes the parser with the specified URL.
     public convenience init?(contentsOf url: URL) {
+#if os(WASI)
+        return nil
+#else
         setupXMLParsing()
         if url.isFileURL {
             if let stream = InputStream(url: url) {
@@ -430,6 +433,7 @@ open class XMLParser : NSObject {
                 return nil
             }
         }
+#endif
     }
 #endif
     
@@ -614,9 +618,9 @@ open class XMLParser : NSObject {
 
     // called to start the event-driven parse. Returns YES in the event of a successful parse, and NO in case of error.
     open func parse() -> Bool {
-        #if os(WASI)
+#if os(WASI)
         return _data.map { parse(from: $0) } ?? false
-        #else
+#else
         XMLParser.setCurrentParser(self)
         defer { XMLParser.setCurrentParser(nil) }
 
@@ -627,7 +631,7 @@ open class XMLParser : NSObject {
         }
 
         return false
-        #endif
+#endif
     }
     
     // called by the delegate to stop the parse. The delegate will get an error message sent to it.
