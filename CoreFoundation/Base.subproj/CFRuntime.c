@@ -1162,8 +1162,10 @@ void __CFInitialize(void) {
     if (!__CFInitialized && !__CFInitializing) {
         __CFInitializing = 1;
 
+#if !TARGET_OS_WASI
     // This is a no-op on Darwin, but is needed on Linux and Windows.
     _CFPerformDynamicInitOfOSRecursiveLock(&CFPlugInGlobalDataLock);
+#endif
 
 #if TARGET_OS_WIN32
         if (!pthread_main_np()) HALT;   // CoreFoundation must be initialized on the main thread
