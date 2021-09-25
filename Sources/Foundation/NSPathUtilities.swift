@@ -374,8 +374,7 @@ extension NSString {
         return converted._stringByFixingSlashes(stripTrailing: false)
     }
 #endif
-    
-#if !os(WASI)
+
     public var standardizingPath: String {
 #if os(Windows)
         let expanded = unixPath.expandingTildeInPath
@@ -425,7 +424,6 @@ extension NSString {
         
         return resolvedPath
     }
-#endif
 
     public func stringsByAppendingPaths(_ paths: [String]) -> [String] {
         if self == "" {
