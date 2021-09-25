@@ -110,7 +110,7 @@ internal class NSConcreteValue : NSValue {
         let boundBytes = self.value.bindMemory(to: UInt8.self, capacity: self._size)
         return Data(bytes: boundBytes, count: self._size).description
     }
-    
+
     convenience required init?(coder aDecoder: NSCoder) {
         guard aDecoder.allowsKeyedCoding else {
             preconditionFailure("Unkeyed coding is unsupported.")

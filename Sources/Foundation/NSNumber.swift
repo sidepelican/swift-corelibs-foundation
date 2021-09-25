@@ -827,6 +827,7 @@ open class NSNumber : NSValue {
         }
     }
 
+#if !os(WASI)
     public required convenience init?(coder aDecoder: NSCoder) {
         guard aDecoder.allowsKeyedCoding else {
             preconditionFailure("Unkeyed coding is unsupported.")
@@ -854,6 +855,7 @@ open class NSNumber : NSValue {
             }
         }
     }
+#endif
 
     open var int8Value: Int8 {
         var value: Int64 = 0
@@ -1114,6 +1116,7 @@ open class NSNumber : NSValue {
         return true
     }
     
+#if !os(WASI)
     open override func encode(with aCoder: NSCoder) {
         guard aCoder.allowsKeyedCoding else {
             preconditionFailure("Unkeyed coding is unsupported.")
@@ -1148,6 +1151,7 @@ open class NSNumber : NSValue {
     }
 
     open override var classForCoder: AnyClass { return NSNumber.self }
+#endif
 }
 
 extension CFNumber : _NSBridgeable {

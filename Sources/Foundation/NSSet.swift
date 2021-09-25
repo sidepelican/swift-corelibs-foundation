@@ -399,9 +399,11 @@ open class NSMutableSet : NSSet {
         super.init(objects: [], count: 0)
     }
     
+#if !os(WASI)
     public required convenience init?(coder aDecoder: NSCoder) {
         self.init(array: NSSet._objects(from: aDecoder))
     }
+#endif
     
     open func addObjects(from array: [Any]) {
         if type(of: self) === NSMutableSet.self {
@@ -547,6 +549,7 @@ open class NSCountedSet : NSMutableSet {
         }
     }
     
+#if !os(WASI)
     open override func encode(with coder: NSCoder) {
         func fail(_ message: String) {
             coder.failWithError(NSError(domain: NSCocoaErrorDomain, code: NSCoderReadCorruptError, userInfo: [NSLocalizedDescriptionKey: message]))
@@ -565,6 +568,7 @@ open class NSCountedSet : NSMutableSet {
             index += 1
         }
     }
+#endif
 
     open override func copy(with zone: NSZone? = nil) -> Any {
         if type(of: self) === NSCountedSet.self {

@@ -193,6 +193,7 @@ open class NSCharacterSet : NSObject, NSCopying, NSMutableCopying, NSSecureCodin
             return nil
         }
     }
+#endif
     
     open class var supportsSecureCoding: Bool { return true }
     

@@ -39,7 +39,7 @@ open class NSTimeZone : NSObject, NSCopying, NSSecureCoding, NSCoding {
             return nil
         }
     }
-    
+
     public convenience required init?(coder aDecoder: NSCoder) {
         guard aDecoder.allowsKeyedCoding else {
             preconditionFailure("Unkeyed coding is unsupported.")
@@ -286,22 +286,24 @@ extension NSTimeZone {
 
 }
 
+#if !os(WASI)
 extension NSNotification.Name {
     public static let NSSystemTimeZoneDidChange = NSNotification.Name(rawValue: kCFTimeZoneSystemTimeZoneDidChangeNotification._swiftObject)
 }
+#endif
 
 internal class __NSLocalTimeZone: NSTimeZone {
     static var shared = __NSLocalTimeZone()
-    
+
     private init() {
         super.init(_name: "GMT+0000")
     }
-    
+
     public convenience required init?(coder aDecoder: NSCoder) {
         // We do not encode details of the local time zone, merely the placeholder object.
         self.init()
     }
-    
+
     override func encode(with aCoder: NSCoder) {
         // We do not encode details of the local time zone, merely the placeholder object.
     }

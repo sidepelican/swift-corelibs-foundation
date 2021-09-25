@@ -58,7 +58,7 @@ extension CGPoint: NSSpecialValueCoding {
         }
         aCoder.encode(self, forKey: "NS.pointval")
     }
-    
+
     static func objCType() -> String {
         return "{CGPoint=dd}"
     }
@@ -574,7 +574,7 @@ extension NSEdgeInsets: NSSpecialValueCoding {
         aCoder._encodeCGFloat(self.bottom, forKey: "NS.edgeval.bottom")
         aCoder._encodeCGFloat(self.right, forKey: "NS.edgeval.right")
     }
-    
+
     static func objCType() -> String {
         return "{NSEdgeInsets=dddd}"
     }

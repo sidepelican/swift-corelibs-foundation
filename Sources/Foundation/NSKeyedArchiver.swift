@@ -140,6 +140,7 @@ open class NSKeyedArchiver : NSCoder {
         return data._swiftObject
     }
     
+#if !os(WASI)
     /// Archives an object graph rooted at a given object by encoding it into a data object
     /// then atomically writes the resulting data object to a file at a given path,
     /// and returns a Boolean value that indicates whether the operation was successful.
@@ -189,7 +190,8 @@ open class NSKeyedArchiver : NSCoder {
         return finishedEncoding
 #endif
     }
-    
+#endif    
+
     public convenience init(requiringSecureCoding: Bool) {
         self.init(output: NSMutableData())
         self.requiresSecureCoding = requiringSecureCoding
@@ -241,7 +243,11 @@ open class NSKeyedArchiver : NSCoder {
     }
     
     private func _writeBinaryData(_ plist : NSDictionary) -> Bool {
+#if os(WASI)
+        return false
+#else
         return __CFBinaryPlistWriteToStream(plist, self._stream) > 0
+#endif
     }
     
     /// Returns the encoded data for the archiver.

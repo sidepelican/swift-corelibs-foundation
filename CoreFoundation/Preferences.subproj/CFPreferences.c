@@ -387,6 +387,7 @@ static CFStringRef  _CFPreferencesCreateCachePrefixForUserHost(CFStringRef  user
         return (CFStringRef)CFRetain(CFSTR("*/*/"));
     }
     CFMutableStringRef result = CFStringCreateMutable(__CFPreferencesAllocator(), 0);
+    #if !TARGET_OS_WASI
     if (userName == kCFPreferencesCurrentUser) {
         userName = CFCopyUserName();
         CFStringAppend(result, userName);
@@ -395,6 +396,9 @@ static CFStringRef  _CFPreferencesCreateCachePrefixForUserHost(CFStringRef  user
     } else if (userName == kCFPreferencesAnyUser) {
         CFStringAppend(result, CFSTR("*/"));
     }
+    #else
+    CFStringAppend(result, CFSTR("*/"));
+    #endif
     if (hostName == kCFPreferencesCurrentHost) {
         CFStringRef hostID = _CFPreferencesGetByHostIdentifierString();
         CFStringAppend(result, hostID);
@@ -420,7 +424,7 @@ static CFStringRef  _CFPreferencesStandardDomainCacheKey(CFStringRef  domainName
 static CFURLRef _CFPreferencesURLForStandardDomainWithSafetyLevel(CFStringRef domainName, CFStringRef userName, CFStringRef hostName, unsigned long safeLevel) {
     CFURLRef theURL = NULL;
     CFAllocatorRef prefAlloc = __CFPreferencesAllocator();
-#if TARGET_OS_OSX || TARGET_OS_WIN32 || TARGET_OS_LINUX || TARGET_OS_BSD
+#if TARGET_OS_OSX || TARGET_OS_WIN32 || TARGET_OS_LINUX || TARGET_OS_BSD || TARGET_OS_WASI
     CFURLRef prefDir = _preferencesCreateDirectoryForUserHostSafetyLevel(userName, hostName, safeLevel);
     CFStringRef  appName;
     CFStringRef  fileName;
@@ -430,11 +434,15 @@ static CFURLRef _CFPreferencesURLForStandardDomainWithSafetyLevel(CFStringRef do
     if (domainName == kCFPreferencesAnyApplication) {
         appName = CFSTR(".GlobalPreferences");
     } else if (domainName == kCFPreferencesCurrentApplication) {
+#if TARGET_OS_WASI
+        appName = NULL;
+#else
         CFBundleRef mainBundle = CFBundleGetMainBundle();
         appName = mainBundle ? CFBundleGetIdentifier(mainBundle) : NULL;
         if (!appName || CFStringGetLength(appName) == 0) {
             appName = _CFProcessNameString();
         }
+#endif
     } else {
         appName = domainName;
     }
@@ -454,7 +462,7 @@ static CFURLRef _CFPreferencesURLForStandardDomainWithSafetyLevel(CFStringRef do
 	CFRelease(appName);
     }
     if (fileName) {
-#if TARGET_OS_MAC || TARGET_OS_LINUX || TARGET_OS_BSD
+#if TARGET_OS_MAC || TARGET_OS_LINUX || TARGET_OS_BSD || TARGET_OS_WASI
         theURL = CFURLCreateWithFileSystemPathRelativeToBase(prefAlloc, fileName, kCFURLPOSIXPathStyle, false, prefDir);
 #elif TARGET_OS_WIN32
 		theURL = CFURLCreateWithFileSystemPathRelativeToBase(prefAlloc, fileName, kCFURLWindowsPathStyle, false, prefDir);
@@ -615,13 +623,17 @@ CF_PRIVATE CFArrayRef _CFPreferencesCreateDomainList(CFStringRef  userName, CFSt
         
         if (!CFStringHasPrefix(domainKey, suffix)) continue;
         domainName = CFStringCreateWithSubstring(prefAlloc, domainKey, CFRangeMake(suffixLen, CFStringGetLength(domainKey) - suffixLen));
+#if !TARGET_OS_WASI
         if (CFEqual(domainName, CFSTR("*"))) {
+#endif
             CFRelease(domainName);
             domainName = (CFStringRef)CFRetain(kCFPreferencesAnyApplication);
+#if !TARGET_OS_WASI
         } else if (CFEqual(domainName, kCFPreferencesCurrentApplication)) {
             CFRelease(domainName);
             domainName = (CFStringRef)CFRetain(_CFProcessNameString());
         }
+#endif
         CFDictionaryRef d = _CFPreferencesDomainDeepCopyDictionary(domain);
         keyCount = d ? CFDictionaryGetCount(d) : 0;
         if (keyCount) CFRelease(d);

@@ -18,6 +18,7 @@ extension unichar {
     }
 }
 
+#if !os(WASI)
 /// Returns a localized string, using the main bundle if one is not specified.
 public
 func NSLocalizedString(_ key: String,
@@ -31,6 +32,7 @@ func NSLocalizedString(_ key: String,
     return bundle.localizedString(forKey: key, value: value, table: tableName)
 #endif
 }
+#endif
 
 internal let kCFStringEncodingMacRoman =  CFStringBuiltInEncodings.macRoman.rawValue
 internal let kCFStringEncodingWindowsLatin1 =  CFStringBuiltInEncodings.windowsLatin1.rawValue
@@ -241,7 +243,7 @@ open class NSString : NSObject, NSCopying, NSMutableCopying, NSSecureCoding, NSC
     internal init(_ string: String) {
         _storage = string
     }
-    
+
     public convenience required init?(coder aDecoder: NSCoder) {
         guard aDecoder.allowsKeyedCoding else {
             preconditionFailure("Unkeyed coding is unsupported.")
@@ -296,11 +298,11 @@ open class NSString : NSObject, NSCopying, NSMutableCopying, NSSecureCoding, NSC
         characters.deallocate()
         return result
     }
-    
+
     public static var supportsSecureCoding: Bool {
         return true
     }
-    
+
     open func encode(with aCoder: NSCoder) {
         if let aKeyedCoder = aCoder as? NSKeyedArchiver {
             aKeyedCoder._encodePropertyList(self, forKey: "NS.string")
@@ -1272,6 +1274,7 @@ extension NSString {
         data = mData
     }
     
+#if !os(WASI)
     internal func _writeTo(_ url: URL, _ useAuxiliaryFile: Bool, _ enc: UInt) throws {
         var data = Data()
         try _getExternalRepresentation(&data, url, enc)
@@ -1285,6 +1288,7 @@ extension NSString {
     open func write(toFile path: String, atomically useAuxiliaryFile: Bool, encoding enc: UInt) throws {
         try _writeTo(URL(fileURLWithPath: path), useAuxiliaryFile, enc)
     }
+#endif
     
     public convenience init(charactersNoCopy characters: UnsafeMutablePointer<unichar>, length: Int, freeWhenDone freeBuffer: Bool) /* "NoCopy" is a hint */ {
         // ignore the no-copy-ness
@@ -1369,6 +1373,7 @@ extension NSString {
         }
     }
 
+#if !os(WASI)
     public convenience init(contentsOf url: URL, encoding enc: UInt) throws {
         let readResult = try NSData(contentsOf: url, options: [])
 
@@ -1456,6 +1461,7 @@ extension NSString {
     public convenience init(contentsOfFile path: String, usedEncoding enc: UnsafeMutablePointer<UInt>?) throws {
         try self.init(contentsOf: URL(fileURLWithPath: path), usedEncoding: enc)
     }
+#endif
 }
 
 extension NSString : ExpressibleByStringLiteral { }

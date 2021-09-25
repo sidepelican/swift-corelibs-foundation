@@ -409,7 +409,8 @@ open class XMLParser : NSObject {
     internal var _delegateAborted = false
     internal var _url: URL?
     internal var _namespaces = [[String:String]]()
-    
+
+#if !os(WASI)
     // initializes the parser with the specified URL.
     public convenience init?(contentsOf url: URL) {
 #if os(WASI)
@@ -434,6 +435,7 @@ open class XMLParser : NSObject {
         }
 #endif
     }
+#endif
     
     // create the parser from data
     public init(data: Data) {

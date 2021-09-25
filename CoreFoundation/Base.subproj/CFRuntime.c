@@ -51,7 +51,7 @@ __kCFRetainEvent = 28,
 __kCFReleaseEvent = 29
 };
 
-#if TARGET_OS_WIN32 || TARGET_OS_LINUX
+#if TARGET_OS_WIN32 || TARGET_OS_LINUX || TARGET_OS_WASI
 #include <malloc.h>
 #elif TARGET_OS_BSD
 #include <stdlib.h> // malloc()
@@ -226,18 +226,18 @@ _CFClassTables __CFRuntimeClassTables __attribute__((aligned)) = {
     [_kCFRuntimeIDCFXMLNode] = &__CFXMLNodeClass,
 #endif // TARGET_OS_OSX
     
+#if !TARGET_OS_WASI
     [_kCFRuntimeIDCFBundle] = &__CFBundleClass,
     [_kCFRuntimeIDCFPFactory] = &__CFPFactoryClass,
     [_kCFRuntimeIDCFPlugInInstance] = &__CFPlugInInstanceClass,
-
     [_kCFRuntimeIDCFPreferencesDomain] = &__CFPreferencesDomainClass,
+#endif
 
 #if TARGET_OS_MAC
     [_kCFRuntimeIDCFMachPort] = &__CFMachPortClass,
 #endif
 
-
-
+#if !TARGET_OS_WASI
     [_kCFRuntimeIDCFRunLoopMode] = &__CFRunLoopModeClass,
     [_kCFRuntimeIDCFRunLoop] = &__CFRunLoopClass,
     [_kCFRuntimeIDCFRunLoopSource] = &__CFRunLoopSourceClass,
@@ -246,6 +246,8 @@ _CFClassTables __CFRuntimeClassTables __attribute__((aligned)) = {
     [_kCFRuntimeIDCFSocket] = &__CFSocketClass,
     [_kCFRuntimeIDCFReadStream] = &__CFReadStreamClass,
     [_kCFRuntimeIDCFWriteStream] = &__CFWriteStreamClass,
+#endif
+
     [_kCFRuntimeIDCFAttributedString] = &__CFAttributedStringClass,
     [_kCFRuntimeIDCFRunArray] = &__CFRunArrayClass,
     [_kCFRuntimeIDCFCharacterSet] = &__CFCharacterSetClass,
@@ -1147,7 +1149,7 @@ _CFThreadRef _CF_pthread_main_thread_np(void) {
 
 
 
-#if TARGET_OS_LINUX || TARGET_OS_BSD
+#if TARGET_OS_LINUX || TARGET_OS_BSD || TARGET_OS_WASI
 static void __CFInitialize(void) __attribute__ ((constructor));
 #endif
 #if TARGET_OS_WIN32
@@ -1160,8 +1162,10 @@ void __CFInitialize(void) {
     if (!__CFInitialized && !__CFInitializing) {
         __CFInitializing = 1;
 
+#if !TARGET_OS_WASI
     // This is a no-op on Darwin, but is needed on Linux and Windows.
     _CFPerformDynamicInitOfOSRecursiveLock(&CFPlugInGlobalDataLock);
+#endif
 
 #if TARGET_OS_WIN32
         if (!pthread_main_np()) HALT;   // CoreFoundation must be initialized on the main thread
@@ -1287,7 +1291,9 @@ void __CFInitialize(void) {
 #endif
         }
 
+#if !TARGET_OS_WASI
         _CFProcessPath();	// cache this early
+#endif
 
         __CFOAInitialize();
         
@@ -1391,7 +1397,8 @@ int DllMain( HINSTANCE hInstance, DWORD dwReason, LPVOID pReserved ) {
 #endif
 
 #if DEPLOYMENT_RUNTIME_SWIFT
-extern void swift_retain(void *);
+CF_CC_swift
+extern void *swift_retain(void *);
 #endif
 
 // For "tryR==true", a return of NULL means "failed".
@@ -1766,6 +1773,18 @@ struct _NSCFXMLBridgeUntyped __NSCFXMLBridgeUntyped = {
   &kCFTypeDictionaryValueCallBacks,
   &kCFErrorLocalizedDescriptionKey,
 };
+
+// This function is also provided in libdispatch.
+#if !__HAS_DISPATCH__
+// For CF functions with 'Get' semantics, the compiler currently assumes that the result is autoreleased and must be retained. It does so on all platforms by emitting a call to objc_retainAutoreleasedReturnValue. On Darwin, this is implemented by the ObjC runtime. On Linux, there is no runtime, and therefore we have to stub it out here ourselves. The compiler will eventually call swift_release to balance the retain below. This is a workaround until the compiler no longer emits this callout on Linux.
+void * objc_retainAutoreleasedReturnValue(void *obj) {
+    if (obj) {
+        swift_retain(obj);
+        return obj;
+    }
+    else return NULL;
+}
+#endif
 
 // Call out to the CF-level finalizer, because the object is going to go away.
 CF_CROSS_PLATFORM_EXPORT void _CFDeinit(CFTypeRef cf) {

@@ -191,7 +191,7 @@ extension String {
         temp.removeSubrange(startIndex..<prefix.endIndex)
         return temp
     }
-    
+
 #if !os(WASI)
     internal func _tryToRemovePathPrefix(_ prefix: String) -> String? {
         guard self != prefix else {
@@ -199,10 +199,14 @@ extension String {
         }
         
         let temp = _stringByRemovingPrefix(prefix)
+#if os(WASI)
+        return temp
+#else
         if FileManager.default.fileExists(atPath: temp) {
             return temp
         }
-        
+#endif
+
         return nil
     }
 #endif
@@ -408,9 +412,11 @@ extension NSString {
                 
             default:
                 resolvedPath = resolvedPath._bridgeToObjectiveC().appendingPathComponent(component)
+#if !os(WASI)
                 if let destination = FileManager.default._tryToResolveTrailingSymlinkInPath(resolvedPath) {
                     resolvedPath = destination
                 }
+#endif
             }
         }
         
@@ -420,7 +426,7 @@ extension NSString {
         return resolvedPath
     }
 #endif
-    
+
     public func stringsByAppendingPaths(_ paths: [String]) -> [String] {
         if self == "" {
             return paths
@@ -722,12 +728,16 @@ public func NSSearchPathForDirectoriesInDomains(_ directory: FileManager.SearchP
         return path
     }
 }
+#endif
 
 public func NSHomeDirectory() -> String {
     return NSHomeDirectoryForUser(nil)!
 }
 
 public func NSHomeDirectoryForUser(_ user: String?) -> String? {
+#if os(WASI)
+    return nil
+#else
     let userName = user?._cfObject
     guard let homeDir = CFCopyHomeDirectoryURLForUser(userName)?.takeRetainedValue() else {
         return nil
@@ -735,8 +745,10 @@ public func NSHomeDirectoryForUser(_ user: String?) -> String? {
     
     let url: URL = homeDir._swiftObject
     return url.path
+#endif
 }
 
+#if !os(WASI)
 public func NSUserName() -> String {
     let userName = CFCopyUserName().takeRetainedValue()
     return userName._swiftObject

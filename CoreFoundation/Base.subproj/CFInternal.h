@@ -103,7 +103,10 @@ CF_EXTERN_C_BEGIN
 #include "CFRuntime_Internal.h"
 #include <limits.h>
 #include <stdatomic.h>
+
+#if __BLOCKS__
 #include <Block.h>
+#endif
 
 #if TARGET_OS_MAC || TARGET_OS_LINUX || TARGET_OS_BSD || TARGET_OS_WASI
 
@@ -322,7 +325,7 @@ static inline void __CFRuntimeSetValue(CFTypeRef cf, uint8_t n1, uint8_t n2, uin
     __CFInfoType info = atomic_load(&(((CFRuntimeBase *)cf)->_cfinfoa));
     __CFInfoType newInfo;
     __CFInfoType mask = __CFInfoMask(n1, n2);
-	
+
     #if !TARGET_OS_WASI
     do {
     #endif
@@ -1172,12 +1175,13 @@ CF_INLINE dispatch_queue_t __CFDispatchQueueGetGenericBackground(void) {
     return dispatch_get_global_queue(QOS_CLASS_UTILITY, DISPATCH_QUEUE_OVERCOMMIT);
 }
 
+CF_PRIVATE dispatch_data_t _CFDataCreateDispatchData(CFDataRef data); //avoids copying in most cases
+
 #endif
 
 CF_PRIVATE CFStringRef _CFStringCopyBundleUnloadingProtectedString(CFStringRef str);
 
 CF_PRIVATE uint8_t *_CFDataGetBytePtrNonObjC(CFDataRef data);
-CF_PRIVATE dispatch_data_t _CFDataCreateDispatchData(CFDataRef data); //avoids copying in most cases
 
 // Use this for functions that are intended to be breakpoint hooks. If you do not, the compiler may optimize them away.
 // Based on: BREAKPOINT_FUNCTION in objc-os.h

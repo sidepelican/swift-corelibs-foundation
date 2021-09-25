@@ -2676,7 +2676,7 @@ static bool __CFStringFillCharacterSetInlineBuffer(CFCharacterSetInlineBuffer *b
 
 #define kCFStringStackBufferLength (__kCFStringInlineBufferLength)
     
-static const u_char __ASCII_LOWERCASE_TABLE[] = {
+static const uint8_t __ASCII_LOWERCASE_TABLE[] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
     0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
     0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F,
@@ -2694,11 +2694,11 @@ static const u_char __ASCII_LOWERCASE_TABLE[] = {
 
 // This function is an implementation of strncasecmp_l that does not stop comparing at embedded null bytes
 // We are not calling to LibC APIs such as tolower_l here because calling to those APIs (as compared to using a lookup table) introduced significant performance regressions
-CF_INLINE int __CFStringCompareASCIICaseInsensitive(const u_char *str1, const u_char *str2, size_t n) {
+CF_INLINE int __CFStringCompareASCIICaseInsensitive(const uint8_t *str1, const uint8_t *str2, size_t n) {
     if (n != 0) {
         do {
-            u_char a = __ASCII_LOWERCASE_TABLE[*str1++];
-            u_char b = __ASCII_LOWERCASE_TABLE[*str2++];
+            uint8_t a = __ASCII_LOWERCASE_TABLE[*str1++];
+            uint8_t b = __ASCII_LOWERCASE_TABLE[*str2++];
             if (a != b) {
                 return a - b;
             }
@@ -3364,7 +3364,7 @@ Boolean CFStringFindWithOptionsAndLocale(CFStringRef string, CFStringRef stringT
                                         if (delta == 1) {
                                             preventStr1FoldingUntil = currentCluster.location + currentCluster.length;
                                         } else {
-                                            preventStr1FoldingUntil = MAX(currentCluster.location - 1, 1);
+                                            preventStr1FoldingUntil = __CFMax(currentCluster.location - 1, 1);
                                         }
                                     }
                                 }
@@ -6811,7 +6811,7 @@ CF_INLINE void _CFStringFormatReplacementDictionaryAppendRange(CFMutableDictiona
     CFDictionarySetValue(replacement, _kCFStringFormatMetadataReplacementRangeLocationKey, rangeLocationObject);
     CFRelease(rangeLocationObject);
     
-    CFIndex length = MAX(lengthAfter - lengthBefore, 0);
+    CFIndex length = __CFMax(lengthAfter - lengthBefore, 0);
     CFNumberRef rangeLengthObject = CFNumberCreate(kCFAllocatorSystemDefault, kCFNumberCFIndexType, &length);
     CFDictionarySetValue(replacement, _kCFStringFormatMetadataReplacementRangeLengthKey, rangeLengthObject);
     CFRelease(rangeLengthObject);

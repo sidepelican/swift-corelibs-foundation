@@ -115,7 +115,7 @@ internal class NSRegularExpressionCheckingResult: NSTextCheckingResult {
         _rangeArray = nil
         super.init()
     }
-    
+
     public convenience required init?(coder aDecoder: NSCoder) {
         guard aDecoder.allowsKeyedCoding else {
             fatalError("Decoding this class requires keyed coding")

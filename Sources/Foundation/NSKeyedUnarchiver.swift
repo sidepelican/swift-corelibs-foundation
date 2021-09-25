@@ -92,7 +92,7 @@ open class NSKeyedUnarchiver : NSCoder {
     open class func unarchiveObject(with data: Data) -> Any? {
         return try? unarchiveTopLevelObjectWithData(data)
     }
-    
+
 #if !os(WASI)
     @available(swift, deprecated: 9999, renamed: "unarchivedObject(ofClass:from:)")
     open class func unarchiveObject(withFile path: String) -> Any? {
@@ -113,7 +113,7 @@ open class NSKeyedUnarchiver : NSCoder {
         return root
     }
 #endif
-    
+
     public init(forReadingFrom data: Data) throws {
         self._stream = .data(data)
         super.init()

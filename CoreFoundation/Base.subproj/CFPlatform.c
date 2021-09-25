@@ -1392,7 +1392,7 @@ void OSMemoryBarrier() {
 #pragma mark -
 #pragma mark Dispatch Replacements
 
-#if !__HAS_DISPATCH__
+#if !__HAS_DISPATCH__ && __BLOCKS__
 
 #include <semaphore.h>
 
@@ -1542,7 +1542,8 @@ CF_PRIVATE int asprintf(char **ret, const char *format, ...) {
 #if DEPLOYMENT_RUNTIME_SWIFT
 #include <fcntl.h>
 
-extern void swift_retain(void *);
+CF_CC_swift
+extern void *swift_retain(void *);
 extern void swift_release(void *);
 
 #if TARGET_OS_WIN32
@@ -1726,6 +1727,9 @@ CF_EXPORT char **_CFEnviron(void) {
     return *_NSGetEnviron();
 #elif TARGET_OS_WIN32
     return _environ;
+#elif TARGET_OS_WASI
+    extern char **environ;
+    return environ;
 #else
 #if TARGET_OS_BSD || TARGET_OS_WASI
     extern char **environ;
