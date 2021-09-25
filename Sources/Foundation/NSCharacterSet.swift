@@ -194,7 +194,7 @@ open class NSCharacterSet : NSObject, NSCopying, NSMutableCopying, NSSecureCodin
         }
     }
 #endif
-    
+
     open class var supportsSecureCoding: Bool { return true }
     
     public required init?(coder aDecoder: NSCoder) {
@@ -331,8 +331,7 @@ open class NSCharacterSet : NSObject, NSCopying, NSMutableCopying, NSSecureCodin
             aCoder.encode(true, forKey: .characterSetIsInvertedKey)
         }
     }
-#endif
-    
+
     open func characterIsMember(_ aCharacter: unichar) -> Bool {
         return longCharacterIsMember(UInt32(aCharacter))
     }
