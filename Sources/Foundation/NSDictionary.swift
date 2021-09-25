@@ -544,7 +544,7 @@ open class NSDictionary : NSObject, NSCopying, NSMutableCopying, NSSecureCoding,
                 }
             }
 
-            #if !os(WASI)
+#if !os(WASI)
             if opts.contains(.concurrent) {
                 DispatchQueue.concurrentPerform(iterations: count, execute: iteration)
             } else {
@@ -552,11 +552,11 @@ open class NSDictionary : NSObject, NSCopying, NSMutableCopying, NSSecureCoding,
                     iteration(idx)
                 }
             }
-            #else
+#else
             for idx in 0..<count {
                 iteration(idx)
             }
-            #endif
+#endif
         }
     }
     

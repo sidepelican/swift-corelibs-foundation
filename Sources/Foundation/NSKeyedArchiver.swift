@@ -151,6 +151,10 @@ open class NSKeyedArchiver : NSCoder {
     /// - Returns:      `true` if the operation was successful, otherwise `false`.
     @available(swift, deprecated: 9999, renamed: "archivedData(withRootObject:requiringSecureCoding:)")
     open class func archiveRootObject(_ rootObject: Any, toFile path: String) -> Bool {
+#if os(WASI)
+        assertionFailure("\(#function) does not support file access on WASI")
+        return false
+#else
         var fd : Int32 = -1
         var auxFilePath : String
         var finishedEncoding : Bool = false
@@ -184,6 +188,7 @@ open class NSKeyedArchiver : NSCoder {
         finishedEncoding = keyedArchiver._flags.contains(.finishedEncoding)
         
         return finishedEncoding
+#endif
     }
 #endif    
 

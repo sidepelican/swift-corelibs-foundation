@@ -506,7 +506,7 @@ open class NSIndexSet : NSObject, NSCopying, NSMutableCopying, NSSecureCoding {
                     }
                 }
             }
-            #if !os(WASI)
+#if !os(WASI)
             if opts.contains(.concurrent) {
                 DispatchQueue.concurrentPerform(iterations: Int(rangeSequence.count), execute: iteration)
             } else {
@@ -514,11 +514,11 @@ open class NSIndexSet : NSObject, NSCopying, NSMutableCopying, NSSecureCoding {
                     iteration(idx)
                 }
             }
-            #else
+#else
             for idx in 0..<Int(rangeSequence.count) {
                 iteration(idx)
             }
-            #endif
+#endif
         }
         
         return result

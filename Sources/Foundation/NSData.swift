@@ -537,7 +537,7 @@ open class NSData : NSObject, NSCopying, NSMutableCopying, NSSecureCoding {
         }
         try write(toFile: url.path, options: writeOptionsMask)
     }
-    #endif
+#endif
 
     // MARK: - Bytes
     /// Copies a number of bytes from the start of the data object into a given buffer.

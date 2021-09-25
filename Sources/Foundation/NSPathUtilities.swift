@@ -192,6 +192,7 @@ extension String {
         return temp
     }
 
+#if !os(WASI)
     internal func _tryToRemovePathPrefix(_ prefix: String) -> String? {
         guard self != prefix else {
             return nil
@@ -208,6 +209,7 @@ extension String {
 
         return nil
     }
+#endif
 }
 
 extension NSString {
@@ -337,6 +339,7 @@ extension NSString {
         return result._stringByFixingSlashes()
     }
 
+#if !os(WASI)
     public var expandingTildeInPath: String {
         guard hasPrefix("~") else {
             return _swiftObject
@@ -357,6 +360,7 @@ extension NSString {
         
         return result
     }
+#endif
 
 #if os(Windows)
     public var unixPath: String {
@@ -370,7 +374,8 @@ extension NSString {
         return converted._stringByFixingSlashes(stripTrailing: false)
     }
 #endif
-
+    
+#if !os(WASI)
     public var standardizingPath: String {
 #if os(Windows)
         let expanded = unixPath.expandingTildeInPath
@@ -420,6 +425,7 @@ extension NSString {
         
         return resolvedPath
     }
+#endif
 
     public func stringsByAppendingPaths(_ paths: [String]) -> [String] {
         if self == "" {
