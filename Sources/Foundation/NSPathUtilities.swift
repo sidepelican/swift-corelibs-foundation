@@ -192,7 +192,6 @@ extension String {
         return temp
     }
 
-#if !os(WASI)
     internal func _tryToRemovePathPrefix(_ prefix: String) -> String? {
         guard self != prefix else {
             return nil
@@ -209,7 +208,6 @@ extension String {
 
         return nil
     }
-#endif
 }
 
 extension NSString {
@@ -339,12 +337,13 @@ extension NSString {
         return result._stringByFixingSlashes()
     }
 
-#if !os(WASI)
     public var expandingTildeInPath: String {
+#if os(WASI)
+        return _swiftObject
+#else 
         guard hasPrefix("~") else {
             return _swiftObject
         }
-
         let endOfUserName = _swiftObject.firstIndex(where : { validPathSeps.contains($0) }) ?? _swiftObject.endIndex
         let startOfUserName = _swiftObject.index(after: _swiftObject.startIndex)
         let userName = String(_swiftObject[startOfUserName..<endOfUserName])
@@ -359,8 +358,8 @@ extension NSString {
         result = result._stringByFixingSlashes(compress: false, stripTrailing: true)
         
         return result
-    }
 #endif
+    }
 
 #if os(Windows)
     public var unixPath: String {
