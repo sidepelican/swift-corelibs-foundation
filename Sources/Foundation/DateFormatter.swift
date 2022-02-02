@@ -12,8 +12,8 @@
 #if !os(WASI)
 open class DateFormatter : Formatter {
     typealias CFType = CFDateFormatter
-    private var __cfObject: CFType?
-    private var _cfObject: CFType {
+    private final var __cfObject: CFType?
+    private final var _cfObject: CFType {
         guard let obj = __cfObject else {
             let dateStyle = CFDateFormatterStyle(rawValue: CFIndex(self.dateStyle.rawValue))!
             let timeStyle = CFDateFormatterStyle(rawValue: CFIndex(self.timeStyle.rawValue))!
@@ -148,7 +148,7 @@ open class DateFormatter : Formatter {
         __cfObject = nil
     }
 
-    internal func _setFormatterAttributes(_ formatter: CFDateFormatter) {
+    internal final func _setFormatterAttributes(_ formatter: CFDateFormatter) {
         _setFormatterAttribute(formatter, attributeName: kCFDateFormatterIsLenient, value: isLenient._cfObject)
         _setFormatterAttribute(formatter, attributeName: kCFDateFormatterTimeZone, value: _timeZone?._cfObject)
         if let ident = _calendar?.identifier {
@@ -182,7 +182,7 @@ open class DateFormatter : Formatter {
         _setFormatterAttribute(formatter, attributeName: kCFDateFormatterGregorianStartDate, value: _gregorianStartDate?._cfObject)
     }
 
-    internal func _setFormatterAttribute(_ formatter: CFDateFormatter, attributeName: CFString, value: AnyObject?) {
+    internal final func _setFormatterAttribute(_ formatter: CFDateFormatter, attributeName: CFString, value: AnyObject?) {
         if let value = value {
             CFDateFormatterSetProperty(formatter, attributeName, value)
         }
