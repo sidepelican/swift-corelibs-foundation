@@ -216,6 +216,13 @@ elseif(NOT CMAKE_SYSTEM_NAME STREQUAL Darwin)
   target_link_options(Foundation PRIVATE "SHELL:-no-toolchain-stdlib-rpath")
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL WASI)
+  target_compile_options(Foundation PRIVATE
+    "SHELL:-Xcc -D_WASI_EMULATED_MMAN
+           -Xcc -D_WASI_EMULATED_SIGNAL
+           -Xcc -D_WASI_EMULATED_PROCESS_CLOCKS")
+endif()
+
 
 set_property(GLOBAL APPEND PROPERTY Foundation_EXPORTS Foundation)
 _install_target(Foundation)

@@ -415,11 +415,6 @@ if(NOT BUILD_SHARED_LIBS)
     $<TARGET_OBJECTS:BlocksRuntime>)
 endif()
 
-if(CMAKE_SYSTEM_NAME STREQUAL WASI)
-  # Enable emulated mman and constant CFSTRINGS
-  target_compile_definitions(CoreFoundation PRIVATE _WASI_EMULATED_MMAN __CONSTANT_CFSTRINGS__)
-endif()
-
 if(CMAKE_SYSTEM_NAME STREQUAL Android)
   target_link_libraries(CoreFoundation PRIVATE
     log)
@@ -562,6 +557,13 @@ if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
   set_target_properties(CoreFoundation
                         PROPERTIES LINK_FLAGS
                           -Xlinker;-alias_list;-Xlinker;Base.subproj/DarwinSymbolAliases;-twolevel_namespace;-sectcreate;__UNICODE;__csbitmaps;CharacterSets/CFCharacterSetBitmaps.bitmap;-sectcreate;__UNICODE;__properties;CharacterSets/CFUniCharPropertyDatabase.data;-sectcreate;__UNICODE;__data;CharacterSets/CFUnicodeData-L.mapping;-segprot;__UNICODE;r;r)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL WASI)
+  # Enable emulated features and constant CFSTRINGS
+  set(WASI_EMULATION_DEFS _WASI_EMULATED_MMAN _WASI_EMULATED_SIGNAL _WASI_EMULATED_PROCESS_CLOCKS)
+  target_compile_definitions(CoreFoundation PRIVATE ${WASI_EMULATION_DEFS} __CONSTANT_CFSTRINGS__)
+  target_compile_definitions(CFXMLInterface PRIVATE ${WASI_EMULATION_DEFS})
 endif()
 
 install(TARGETS
