@@ -58,14 +58,20 @@ open class ProcessInfo: NSObject {
     }
     
     open var hostName: String {
+#if os(WASI)
+        return "localhost"
+#else
         if let name = Host.current().name {
             return name
         } else {
             return "localhost"
         }
+#endif
     }
     
+#if !os(WASI)
     open var processName: String = _CFProcessNameString()._swiftObject
+#endif
     
     open var processIdentifier: Int32 {
 #if os(Windows)
@@ -293,6 +299,7 @@ open class ProcessInfo: NSObject {
         return CFGetSystemUptime()
     }
     
+#if !os(WASI)
     open var userName: String {
         return NSUserName()
     }
@@ -300,6 +307,7 @@ open class ProcessInfo: NSObject {
     open var fullUserName: String {
         return NSFullUserName()
     }
+#endif
 
 
 #if os(Linux)
@@ -364,9 +372,11 @@ open class ProcessInfo: NSObject {
 #endif
 }
 
+#if !os(WASI)
 // SPI for TestFoundation
 internal extension ProcessInfo {
   var _processPath: String {
     return String(cString: _CFProcessPath())
   }
 }
+#endif
