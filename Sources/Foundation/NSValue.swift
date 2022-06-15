@@ -92,7 +92,7 @@ open class NSValue : NSObject, NSCopying, NSSecureCoding, NSCoding {
             NSRequiresConcreteImplementation()
         }
     }
-
+    
     private static func _isSpecialObjCType(_ type: UnsafePointer<Int8>) -> Bool {
         return NSSpecialValue._typeFromObjCType(type) != nil
     }

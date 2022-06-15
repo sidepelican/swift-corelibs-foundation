@@ -347,7 +347,7 @@ extension NSRange {
         length = x.count
     }
 }
-
+    
 extension NSRange: NSSpecialValueCoding {
     init(bytes: UnsafeRawPointer) {
         self.location = bytes.load(as: Int.self)

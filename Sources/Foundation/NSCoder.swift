@@ -36,6 +36,7 @@ extension NSCoder {
 /// Any object class that should be codable must adopt the NSCoding protocol and
 /// implement its methods.
 public protocol NSCoding {
+    
     /// Encodes an instance of a conforming class using a given archiver.
     ///
     /// - Parameter aCoder: An archiver object.
@@ -75,6 +76,7 @@ public protocol NSCoding {
 ///   In addition, the class must override its `NSSecureCoding` method to return
 ///   `true`.
 public protocol NSSecureCoding : NSCoding {
+    
     static var supportsSecureCoding: Bool { get }
 }
 
