@@ -788,7 +788,7 @@ CFTypeRef _CFNonObjCRetain(CFTypeRef cf) {
 
 CFTypeRef CFRetain(CFTypeRef cf) {
     if (NULL == cf) { CRSetCrashLogMessage("*** CFRetain() called with NULL ***"); HALT; }
-    if (cf) __CFGenericAssertIsCF(cf);
+    __CFGenericAssertIsCF(cf);
     return _CFRetain(cf, false);
 }
 
@@ -806,7 +806,7 @@ void _CFNonObjCRelease(CFTypeRef cf) {
 
 void CFRelease(CFTypeRef cf) {
     if (NULL == cf) { CRSetCrashLogMessage("*** CFRelease() called with NULL ***"); HALT; }
-    if (cf) __CFGenericAssertIsCF(cf);
+    __CFGenericAssertIsCF(cf);
     _CFRelease(cf);
 }
 
