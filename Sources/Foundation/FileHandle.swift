@@ -29,6 +29,10 @@ import WASILibc
 fileprivate let _read = WASILibc.read(_:_:_:)
 fileprivate let _write = WASILibc.write(_:_:_:)
 fileprivate let _close = WASILibc.close(_:)
+// wasi-libc's errno is defined as an usual TLS variable, so ClangImporter can import it through CoreFoundation
+// while other platforms' are not importable due to their complex macro definition. Imported errno conflicts with
+// WASILibc's errno definition, so define a Foundation internal version here to avoid ambiguity error.
+internal var errno: Int32 { return WASILibc.errno }
 #endif
 
 #if canImport(WinSDK)
