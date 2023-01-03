@@ -24,6 +24,15 @@ import Glibc
 fileprivate let _read = Glibc.read(_:_:_:)
 fileprivate let _write = Glibc.write(_:_:_:)
 fileprivate let _close = Glibc.close(_:)
+#elseif canImport(WASILibc)
+import WASILibc
+fileprivate let _read = WASILibc.read(_:_:_:)
+fileprivate let _write = WASILibc.write(_:_:_:)
+fileprivate let _close = WASILibc.close(_:)
+// wasi-libc's errno is defined as an usual TLS variable, so ClangImporter can import it through CoreFoundation
+// while other platforms' are not importable due to their complex macro definition. Imported errno conflicts with
+// WASILibc's errno definition, so define a Foundation internal version here to avoid ambiguity error.
+internal var errno: Int32 { return WASILibc.errno }
 #endif
 
 #if canImport(WinSDK)
@@ -47,7 +56,6 @@ extension NSError {
     }
 }
 
-#if !os(WASI)
 /* On Darwin, FileHandle conforms to NSSecureCoding for use with NSXPCConnection and related facilities only. On swift-corelibs-foundation, it does not conform to that protocol since those facilities are unavailable. */
  
 open class FileHandle : NSObject {
@@ -844,6 +852,8 @@ extension NSExceptionName {
     public static let fileHandleOperationException = NSExceptionName(rawValue: "NSFileHandleOperationException")
 }
 
+
+#if !os(WASI)
 extension Notification.Name {
     public static let NSFileHandleReadToEndOfFileCompletion = Notification.Name(rawValue: "NSFileHandleReadToEndOfFileCompletionNotification")
     public static let NSFileHandleConnectionAccepted = Notification.Name(rawValue: "NSFileHandleConnectionAcceptedNotification")
@@ -1039,7 +1049,9 @@ extension FileHandle {
     }
 #endif
 }
+#endif
 
+#if !os(WASI)
 open class Pipe: NSObject {
     public let fileHandleForReading: FileHandle
     public let fileHandleForWriting: FileHandle
@@ -1083,25 +1095,5 @@ open class Pipe: NSObject {
 #endif
         super.init()
     }
-}
-#else
-private let libcWrite = write
-
-public final class FileHandle {
-  public let fileDescriptor: Int32
-
-  public init(fileDescriptor: Int32) {
-    self.fileDescriptor = fileDescriptor
-  }
-
-  public static var standardError: FileHandle {
-    .init(fileDescriptor: STDERR_FILENO)
-  }
-
-  public func write(_ data: Data) {
-    _ = data.withUnsafeBytes {
-      libcWrite(fileDescriptor, $0.baseAddress, data.count)
-    }
-  }
 }
 #endif
