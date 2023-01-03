@@ -1,0 +1,51 @@
+name: Smoke Test
+on:
+  push:
+    branches:
+      - swiftwasm
+      - swiftwasm-release/*
+  pull_request:
+    branches:
+      - swiftwasm
+      - swiftwasm-release/*
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: swift-corelibs-foundation
+      - uses: actions/checkout@v3
+        with:
+          repository: swiftwasm/swift
+          path: swift
+      - uses: swiftwasm/setup-swiftwasm/nightly@main
+        id: nightly-toolchain
+        with:
+          channel: DEVELOPMENT
+      - name: Copy the latest nightly toolchain
+        run: |
+          cp -R ${{ steps.nightly-toolchain.outputs.toolchain-path }} ./base-toolchain
+          # Remove base CoreFoundation headers and modulemap to avoid conflicts with the builditng one
+          rm -rf ./base-toolchain/usr/lib/swift_static/CoreFoundation
+      - run: ./swift/utils/webassembly/install-build-sdk.sh
+      - name: Build the project
+        run: |
+          docker volume create oss-swift-package
+          docker run --name swiftwasm-ci-buildbot \
+            --security-opt=no-new-privileges \
+            --cap-add=SYS_PTRACE \
+            --security-opt seccomp=unconfined \
+            -dit \
+            -w /home/build-user/ \
+            -v $PWD:/source \
+            -v oss-swift-package:/home/build-user \
+            ghcr.io/swiftwasm/swift-ci:main-ubuntu-22.04
+      - run: |
+          docker exec swiftwasm-ci-buildbot /bin/bash -lc 'env; cp -r /source/* /home/build-user/; ./swift/utils/webassembly/build-foundation.sh $PWD/base-toolchain $PWD/build-sdk/wasi-sysroot'
+          docker cp swiftwasm-ci-buildbot:/home/build-user/base-toolchain ./toolchain
+      - uses: actions/upload-artifact@v3
+        with:
+          name: toolchain
+          path: ./toolchain
+
