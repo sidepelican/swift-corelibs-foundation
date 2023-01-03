@@ -29,7 +29,7 @@ jobs:
           # Remove base CoreFoundation headers and modulemap to avoid conflicts with the builditng one
           rm -rf ./base-toolchain/usr/lib/swift_static/CoreFoundation
       - run: ./swift/utils/webassembly/install-build-sdk.sh
-      - name: Build the project
+      - name: Setup build container
         run: |
           docker volume create oss-swift-package
           docker run --name swiftwasm-ci-buildbot \
@@ -41,7 +41,8 @@ jobs:
             -v $PWD:/source \
             -v oss-swift-package:/home/build-user \
             ghcr.io/swiftwasm/swift-ci:main-ubuntu-22.04
-      - run: |
+      - name: Build the project
+        run: |
           docker exec swiftwasm-ci-buildbot /bin/bash -lc 'env; cp -r /source/* /home/build-user/; ./swift/utils/webassembly/build-foundation.sh $PWD/base-toolchain $PWD/build-sdk/wasi-sysroot'
           docker cp swiftwasm-ci-buildbot:/home/build-user/base-toolchain ./toolchain
           tar czf toolchain.tar.gz ./toolchain
