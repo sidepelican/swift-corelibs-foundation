@@ -44,8 +44,9 @@ jobs:
       - run: |
           docker exec swiftwasm-ci-buildbot /bin/bash -lc 'env; cp -r /source/* /home/build-user/; ./swift/utils/webassembly/build-foundation.sh $PWD/base-toolchain $PWD/build-sdk/wasi-sysroot'
           docker cp swiftwasm-ci-buildbot:/home/build-user/base-toolchain ./toolchain
+          tar czf toolchain.tar.gz ./toolchain
       - uses: actions/upload-artifact@v3
         with:
           name: toolchain
-          path: ./toolchain
+          path: ./toolchain.tar.gz
 
